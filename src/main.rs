@@ -1,10 +1,12 @@
+use std::io;
+
 struct Robot {
-    x: i128,
-    y: i128,
+    x: i8,
+    y: i8,
 }
 
 impl Robot {
-    pub fn move_forward(&mut self, steps: i128, direction: &str) {
+    pub fn move_forward(&mut self, steps: i8, direction: &str) {
         if direction == "y" {
             self.y += steps;
         } else if direction == "x" {
@@ -14,19 +16,72 @@ impl Robot {
         }
     }
 
+    pub fn get_x(&mut self) -> i8 { self.x }
+    pub fn get_y(&mut self) -> i8 { self.y }
+
     pub fn get_current_position(&mut self) {
         println!("I am on x coordinate: {}", self.x);
         println!("And on y coordinate: {}", self.y);
     }
 }
 
+
+fn game(robot_x: i8, robot_y: i8) {
+    let map = [["#", "#", "#", "#", "#", "#", "#", "#"],
+        ["#", "#", "#", "#", "#", "#", "#", "#"],
+        ["#", "#", "#", "#", "#", "#", "#", "#"],
+        ["#", "#", "#", "#", "#", "#", "#", "#"],
+        ["#", "#", "#", "#", "#", "#", "#", "#"],
+        ["#", "#", "#", "#", "#", "#", "#", "#"],
+        ["#", "#", "#", "#", "#", "#", "#", "#"],
+        ["#", "#", "#", "#", "#", "#", "#", "#"]];
+    let mut current_x: i8 = 0;
+    let mut current_y: i8 = 0;
+
+    for row in map.iter() {
+        for column in row.iter() {
+            if current_x == robot_x && current_y == robot_y {
+                print!(" + ")
+            } else {
+                print!(" {} ", column);
+            }
+            current_x += 1
+        }
+        print!("\n");
+        current_x = 0;
+        current_y += 1;
+    }
+}
+
 fn main() {
     let mut robot = Robot {x: 0, y: 0};
-    robot.move_forward(-5, "x");
-    robot.move_forward(10, "x");
-    robot.get_current_position();
-    robot.move_forward(12, "y");
-    robot.get_current_position();
+    loop {
+        loop {
+            let mut input = String::new();
+            let mut direction = String::new();
+            println!("Please enter the direction (x / y): ");
+            io::stdin()
+                .read_line(&mut direction)
+                .expect("Failed to read line.");
+            let direction = direction.trim();
+
+            println!("Please enter the amount of steps the robot has to go: ");
+            io::stdin()
+                .read_line(&mut input)
+                .expect("Failed to read line.");
+            match input.trim().parse::<i8>() {
+                Ok(num) => {
+                    robot.move_forward(num, &direction);
+                    break;
+                }
+                Err(_) => {
+                    println!("Invalid integer!");
+                }
+            }
+        }
+        println!("\n\n\n");
+        game(robot.get_x(), robot.get_y());
+    }
 }
 
 
