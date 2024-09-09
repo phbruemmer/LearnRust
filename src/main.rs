@@ -26,7 +26,7 @@ fn main() {
     robot.move_forward(10, "x");
     robot.get_current_position();
     robot.move_forward(12, "y");
-    robot.get_current_position()
+    robot.get_current_position();
 }
 
 
