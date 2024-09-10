@@ -1,9 +1,22 @@
 use std::io;
+use rand::Rng;
 
 struct Robot {
     x: i8,
     y: i8,
 }
+
+struct Player {
+    coins: i8,
+    coin_coordinates: [i8; 2],
+}
+
+impl Player {
+    fn increment_coins(&mut self) { self.coins += 1 }
+
+    fn change_coin_coordinates(&mut self, coin_xy_coordinates: [i8; 2]) { self.coin_coordinates = coin_xy_coordinates; }
+}
+
 
 impl Robot {
     pub fn move_forward(&mut self, steps: i8, direction: &str) {
@@ -18,15 +31,16 @@ impl Robot {
 
     pub fn get_x(&mut self) -> i8 { self.x }
     pub fn get_y(&mut self) -> i8 { self.y }
-
-    pub fn get_current_position(&mut self) {
-        println!("I am on x coordinate: {}", self.x);
-        println!("And on y coordinate: {}", self.y);
-    }
 }
 
 
-fn game(robot_x: i8, robot_y: i8) {
+fn random(x: i16, y: i16) -> i16 { // Creates random number between x and y
+    let mut rng = rand::thread_rng();
+    rng.gen_range(x..y)
+}
+
+
+fn game(robot_x: i8, robot_y: i8, player:  &mut Player) {
     let map = [["#", "#", "#", "#", "#", "#", "#", "#"],
         ["#", "#", "#", "#", "#", "#", "#", "#"],
         ["#", "#", "#", "#", "#", "#", "#", "#"],
@@ -38,11 +52,23 @@ fn game(robot_x: i8, robot_y: i8) {
     let mut current_x: i8 = 0;
     let mut current_y: i8 = 0;
 
+    print!("{}[2J", 27 as char); // Clear terminal window
+
+    if robot_x == player.coin_coordinates[0] && robot_y == player.coin_coordinates[1] {
+        player.increment_coins();
+        player.change_coin_coordinates([random(0, 7) as i8, random(0, 7) as i8]);
+        println!("Coin collected!");
+    } else {}
+
+    println!("coins: {}\n\n", player.coins);
+
     for row in map.iter() {
         for column in row.iter() {
-            if current_x == robot_x && current_y == robot_y {
-                print!(" + ")
-            } else {
+            if current_x == robot_x && current_y == robot_y { // Places the robot character ("+") on the given coordinates
+                print!(" + ");
+            } else if current_x == player.coin_coordinates[0] && current_y == player.coin_coordinates[1] { // Places the coin character ("o") on the given coordinates
+                print!(" o " );
+            }  else {
                 print!(" {} ", column);
             }
             current_x += 1
@@ -55,6 +81,8 @@ fn game(robot_x: i8, robot_y: i8) {
 
 fn main() {
     let mut robot = Robot {x: 0, y: 0};
+    let mut player = Player {coins: 0, coin_coordinates: [random(0, 7) as i8, random(0, 7) as i8] ,};
+    let mut _new_coin_coordinates: [i8; 2];
     loop {
         loop {
             let mut input = String::new();
@@ -80,7 +108,8 @@ fn main() {
             }
         }
         println!("\n\n\n");
-        game(robot.get_x(), robot.get_y());
+        _new_coin_coordinates = [random(0, 7) as i8, random(0, 7) as i8];
+        game(robot.get_x(), robot.get_y(), &mut player,);
     }
 }
 
