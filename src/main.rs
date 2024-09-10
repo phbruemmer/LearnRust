@@ -11,6 +11,10 @@ struct Player {
     coin_coordinates: [i8; 2],
 }
 
+struct Map {
+    map: [[&'static str; 8]; 8],
+}
+
 impl Player {
     fn increment_coins(&mut self) { self.coins += 1 }
 
@@ -19,7 +23,7 @@ impl Player {
 
 
 impl Robot {
-    pub fn move_forward(&mut self, steps: i8, direction: &str) {
+    fn move_forward(&mut self, steps: i8, direction: &str) {
         if direction == "y" {
             self.y += steps;
         } else if direction == "x" {
@@ -29,8 +33,8 @@ impl Robot {
         }
     }
 
-    pub fn get_x(&mut self) -> i8 { self.x }
-    pub fn get_y(&mut self) -> i8 { self.y }
+    fn get_x(&mut self) -> i8 { self.x }
+    fn get_y(&mut self) -> i8 { self.y }
 }
 
 
@@ -40,15 +44,7 @@ fn random(x: i16, y: i16) -> i16 { // Creates random number between x and y
 }
 
 
-fn game(robot_x: i8, robot_y: i8, player:  &mut Player) {
-    let map = [["#", "#", "#", "#", "#", "#", "#", "#"],
-        ["#", "#", "#", "#", "#", "#", "#", "#"],
-        ["#", "#", "#", "#", "#", "#", "#", "#"],
-        ["#", "#", "#", "#", "#", "#", "#", "#"],
-        ["#", "#", "#", "#", "#", "#", "#", "#"],
-        ["#", "#", "#", "#", "#", "#", "#", "#"],
-        ["#", "#", "#", "#", "#", "#", "#", "#"],
-        ["#", "#", "#", "#", "#", "#", "#", "#"]];
+fn game(map: &mut Map, robot_x: i8, robot_y: i8, player:  &mut Player) {
     let mut current_x: i8 = 0;
     let mut current_y: i8 = 0;
 
@@ -56,13 +52,13 @@ fn game(robot_x: i8, robot_y: i8, player:  &mut Player) {
 
     if robot_x == player.coin_coordinates[0] && robot_y == player.coin_coordinates[1] {
         player.increment_coins();
-        player.change_coin_coordinates([random(0, 7) as i8, random(0, 7) as i8]);
+        player.change_coin_coordinates([random(1, map.map.len() as i16 - 1) as i8, random(1, map.map.len() as i16 - 1) as i8]); // Problem: Can spawn coin on player position (coin not visible)
         println!("Coin collected!");
     } else {}
 
     println!("coins: {}\n\n", player.coins);
 
-    for row in map.iter() {
+    for row in map.map.iter() {
         for column in row.iter() {
             if current_x == robot_x && current_y == robot_y { // Places the robot character ("+") on the given coordinates
                 print!(" + ");
@@ -80,9 +76,20 @@ fn game(robot_x: i8, robot_y: i8, player:  &mut Player) {
 }
 
 fn main() {
+    let map_data = [["#", "#", "#", "#", "#", "#", "#", "#"],
+        ["#", "#", "#", "#", "#", "#", "#", "#"],
+        ["#", "#", "#", "#", "#", "#", "#", "#"],
+        ["#", "#", "#", "#", "#", "#", "#", "#"],
+        ["#", "#", "#", "#", "#", "#", "#", "#"],
+        ["#", "#", "#", "#", "#", "#", "#", "#"],
+        ["#", "#", "#", "#", "#", "#", "#", "#"],
+        ["#", "#", "#", "#", "#", "#", "#", "#"]];
+
+    let mut _map = Map {map: map_data };
     let mut robot = Robot {x: 0, y: 0};
     let mut player = Player {coins: 0, coin_coordinates: [random(0, 7) as i8, random(0, 7) as i8] ,};
     let mut _new_coin_coordinates: [i8; 2];
+
     loop {
         loop {
             let mut input = String::new();
@@ -109,7 +116,7 @@ fn main() {
         }
         println!("\n\n\n");
         _new_coin_coordinates = [random(0, 7) as i8, random(0, 7) as i8];
-        game(robot.get_x(), robot.get_y(), &mut player,);
+        game(&mut _map, robot.get_x(), robot.get_y(), &mut player,);
     }
 }
 
