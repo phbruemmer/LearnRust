@@ -55,10 +55,8 @@ fn game(map: &mut Map, robot_x: i8, robot_y: i8, player:  &mut Player) {
 
     println!("coins: {}\n\n", player.coins);
 
-    println!("{:?}", player.coin_coordinates);
-
-    for row in 0..map.map[0] {
-        for column in 0..map.map[1] {
+    for row in 0..map.map[1] {
+        for column in 0..map.map[0] {
             if column == robot_x as u16 && row == robot_y as u16 { // Places the robot character ("+") on the given coordinates
                 print!(" + ");
             } else if column == player.coin_coordinates[0] as u16 && row == player.coin_coordinates[1] as u16 { // Places the coin character ("o") on the given coordinates
@@ -71,11 +69,7 @@ fn game(map: &mut Map, robot_x: i8, robot_y: i8, player:  &mut Player) {
     }
 }
 
-fn start_game() {
-    let mut _map = Map {map: [4, 16] };
-    let mut robot = Robot {x: 0, y: 0};
-    let mut player = Player {coins: 0, coin_coordinates: [random(0, _map.map[0] as i16 - 1) as i8, random(0, _map.map[1] as i16 - 1) as i8] ,};
-
+fn start_game(_map: &mut Map, _robot: &mut Robot, _player: &mut Player) {
     loop {
         loop {
             let mut input = String::new();
@@ -92,7 +86,7 @@ fn start_game() {
                 .expect("Failed to read line.");
             match input.trim().parse::<i8>() {
                 Ok(num) => {
-                    robot.move_forward(num, &direction);
+                    _robot.move_forward(num, &direction);
                     break;
                 }
                 Err(_) => {
@@ -101,12 +95,45 @@ fn start_game() {
             }
         }
         println!("\n\n\n");
-        game(&mut _map, robot.get_x(), robot.get_y(), &mut player,);
+        game(_map, _robot.get_x(), _robot.get_y(), _player,);
+    }
+}
+
+fn prepare_game() {
+    let mut map_width = String::new();
+    let mut map_height = String::new();
+
+    println!("[INPUT] Enter Map width: ");
+    io::stdin()
+        .read_line(&mut map_width)
+        .expect("Failed to read line.");
+
+    println!("[INPUT] Enter Map height: ");
+    io::stdin()
+        .read_line(&mut map_height)
+        .expect("Failed to read line.");
+
+    match map_width.trim().parse::<u16>() {
+        Ok(map_x) => {
+            println!("Map width is valid.");
+            match map_height.trim().parse::<u16>() {
+                Ok(map_y) => {
+                    println!("Map height is valid.");
+                    let mut _map = Map {map: [map_x , map_y] };
+                    let mut _robot = Robot {x: 0, y: 0};
+                    let mut _player = Player {coins: 0, coin_coordinates: [random(0, _map.map[0] as i16 - 1) as i8, random(0, _map.map[1] as i16 - 1) as i8] ,};
+                    start_game(&mut _map, &mut _robot, &mut _player);
+                }
+                Err(_) => { main() }
+            }
+
+        }
+        Err(_) => { prepare_game() }
     }
 }
 
 fn main() {
-    start_game();
+    prepare_game();
 }
 
 
