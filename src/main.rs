@@ -12,7 +12,7 @@ struct Coins {
 
 struct Map {
     map: [u16; 2],
-    obstacles: Vec<u16>
+    obstacles: Vec<[i16; 2]>
 }
 
 fn random(x: i16, y: i16) -> i16 { // Creates random number between x and y
@@ -31,6 +31,17 @@ impl Coins {
             coordinates = [random(0, map_size[0] as i16), random(0, map_size[1] as i16)];
         }
         self.coin_coordinates = coordinates;
+    }
+}
+
+impl Map {
+    fn add_obstacle(&mut self, player_coordinates: &[i16; 2], coin_coordinates: &[i16; 2], map_size: &[u16; 2]) {
+        let mut coordinates: [i16; 2] = [random(0, map_size[0] as i16), random(0, map_size[1] as i16)];
+
+        while coordinates == *player_coordinates || coordinates == *coin_coordinates {
+            coordinates = [random(0, map_size[0] as i16), random(0, map_size[1] as i16)];
+        }
+        self.obstacles.push(coordinates)
     }
 }
 
@@ -65,7 +76,8 @@ fn game(map: &mut Map, robot: &Robot, coins:  &mut Coins) {
                 print!(" + ");
             } else if column == coins.coin_coordinates[0] as u16 && row == coins.coin_coordinates[1] as u16 { // Places the coin character ("o") on the given coordinates
                 print!(" o " );
-            }  else {
+            } // Add obstacle if-statement here - map.obstacles is a vector containing arrays !important!
+            else {
                 print!(" # ");
             }
         }
