@@ -2,41 +2,18 @@ use std::io;
 use rand::Rng;
 
 struct Robot {
-    x: i8,
-    y: i8,
+    coordinates: [i16; 2]
 }
 
-struct Player {
+struct Coins {
     coins: i8,
-    coin_coordinates: [i8; 2],
+    coin_coordinates: [i16; 2],
 }
 
 struct Map {
     map: [u16; 2],
+    obstacles: Vec<u16>
 }
-
-impl Player {
-    fn increment_coins(&mut self) { self.coins += 1 }
-
-    fn change_coin_coordinates(&mut self, coin_xy_coordinates: [i8; 2]) { self.coin_coordinates = coin_xy_coordinates; }
-}
-
-
-impl Robot {
-    fn move_forward(&mut self, steps: i8, direction: &str) {
-        if direction == "y" {
-            self.y += steps;
-        } else if direction == "x" {
-            self.x += steps;
-        } else {
-            println!("[info] No valid direction!")
-        }
-    }
-
-    fn get_x(&mut self) -> i8 { self.x }
-    fn get_y(&mut self) -> i8 { self.y }
-}
-
 
 fn random(x: i16, y: i16) -> i16 { // Creates random number between x and y
     let mut rng = rand::thread_rng();
@@ -44,22 +21,49 @@ fn random(x: i16, y: i16) -> i16 { // Creates random number between x and y
 }
 
 
-fn game(map: &mut Map, robot_x: i8, robot_y: i8, player:  &mut Player) {
+impl Coins {
+    fn increment_coins(&mut self) { self.coins += 1 }
+
+    fn change_coin_coordinates(&mut self, player_coordinates: &[i16; 2], map_size: &[u16; 2]) {
+        let mut coordinates: [i16; 2] = [random(0, map_size[0] as i16), random(0, map_size[1] as i16)];
+
+        while coordinates == *player_coordinates {
+            coordinates = [random(0, map_size[0] as i16), random(0, map_size[1] as i16)];
+        }
+        self.coin_coordinates = coordinates;
+    }
+}
+
+
+impl Robot {
+    fn move_forward(&mut self, steps: i8, direction: &str) {
+        if direction == "y" {
+            self.coordinates[1] += steps as i16;
+        } else if direction == "x" {
+            self.coordinates[0] += steps as i16;
+        } else {
+            println!("[info] No valid direction!")
+        }
+    }
+}
+
+
+fn game(map: &mut Map, robot: &Robot, coins:  &mut Coins) {
     print!("{}[2J", 27 as char); // Clear terminal window
 
-    if robot_x == player.coin_coordinates[0] && robot_y == player.coin_coordinates[1] {
-        player.increment_coins();
-        player.change_coin_coordinates([random(1, map.map[0] as i16 - 1) as i8, random(1, map.map[1] as i16 - 1) as i8]); // Problem: Can spawn coin on player position (coin not visible)
+    if robot.coordinates == coins.coin_coordinates {
+        coins.increment_coins();
+        coins.change_coin_coordinates(&[random(1, map.map[0] as i16 - 1), random(1, map.map[1] as i16 - 1)],  &map.map);
         println!("Coin collected!");
     }
 
-    println!("coins: {}\n\n", player.coins);
+    println!("coins: {}\n\n", coins.coins);
 
     for row in 0..map.map[1] {
         for column in 0..map.map[0] {
-            if column == robot_x as u16 && row == robot_y as u16 { // Places the robot character ("+") on the given coordinates
+            if column == robot.coordinates[0] as u16 && row == robot.coordinates[1] as u16 { // Places the robot character ("+") on the given coordinates
                 print!(" + ");
-            } else if column == player.coin_coordinates[0] as u16 && row == player.coin_coordinates[1] as u16 { // Places the coin character ("o") on the given coordinates
+            } else if column == coins.coin_coordinates[0] as u16 && row == coins.coin_coordinates[1] as u16 { // Places the coin character ("o") on the given coordinates
                 print!(" o " );
             }  else {
                 print!(" # ");
@@ -69,7 +73,7 @@ fn game(map: &mut Map, robot_x: i8, robot_y: i8, player:  &mut Player) {
     }
 }
 
-fn start_game(_map: &mut Map, _robot: &mut Robot, _player: &mut Player) {
+fn start_game(_map: &mut Map, _robot: &mut Robot, _player: &mut Coins) {
     loop {
         loop {
             let mut input = String::new();
@@ -95,7 +99,7 @@ fn start_game(_map: &mut Map, _robot: &mut Robot, _player: &mut Player) {
             }
         }
         println!("\n\n\n");
-        game(_map, _robot.get_x(), _robot.get_y(), _player,);
+        game(_map, _robot, _player,);
     }
 }
 
@@ -119,10 +123,10 @@ fn prepare_game() {
             match map_height.trim().parse::<u16>() {
                 Ok(map_y) => {
                     println!("Map height is valid.");
-                    let mut _map = Map {map: [map_x , map_y] };
-                    let mut _robot = Robot {x: 0, y: 0};
-                    let mut _player = Player {coins: 0, coin_coordinates: [random(0, _map.map[0] as i16 - 1) as i8, random(0, _map.map[1] as i16 - 1) as i8] ,};
-                    start_game(&mut _map, &mut _robot, &mut _player);
+                    let mut _map = Map {map: [map_x , map_y], obstacles: Vec::new() };
+                    let mut _robot = Robot {coordinates: [0, 0]};
+                    let mut _coins = Coins {coins: 0, coin_coordinates: [random(0, _map.map[0] as i16 - 1), random(0, _map.map[1] as i16 - 1)] ,};
+                    start_game(&mut _map, &mut _robot, &mut _coins);
                 }
                 Err(_) => { main() }
             }
