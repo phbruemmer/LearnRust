@@ -35,7 +35,7 @@ impl Coins {
 }
 
 impl Map {
-    fn add_obstacle(&mut self, player_coordinates: &[i16; 2], coin_coordinates: &[i16; 2], map_size: &[u16; 2]) {
+    fn add_obstacle(&mut self, player_coordinates: &[i16; 2], coin_coordinates: &[i16; 2], map_size: [u16; 2]) {
         let mut coordinates: [i16; 2] = [random(0, map_size[0] as i16), random(0, map_size[1] as i16)];
 
         while coordinates == *player_coordinates || coordinates == *coin_coordinates {
@@ -58,6 +58,10 @@ impl Robot {
     }
 }
 
+fn contains_array(vec: &Vec<[i16; 2]>, array: &[i16]) -> bool {
+    vec.iter().any(|&x| x == *array)
+}
+
 
 fn game(map: &mut Map, robot: &Robot, coins:  &mut Coins) {
     print!("{}[2J", 27 as char); // Clear terminal window
@@ -65,6 +69,7 @@ fn game(map: &mut Map, robot: &Robot, coins:  &mut Coins) {
     if robot.coordinates == coins.coin_coordinates {
         coins.increment_coins();
         coins.change_coin_coordinates(&[random(1, map.map[0] as i16 - 1), random(1, map.map[1] as i16 - 1)],  &map.map);
+        map.add_obstacle(&robot.coordinates, &coins.coin_coordinates, map.map);
         println!("Coin collected!");
     }
 
@@ -76,7 +81,9 @@ fn game(map: &mut Map, robot: &Robot, coins:  &mut Coins) {
                 print!(" + ");
             } else if column == coins.coin_coordinates[0] as u16 && row == coins.coin_coordinates[1] as u16 { // Places the coin character ("o") on the given coordinates
                 print!(" o " );
-            } // Add obstacle if-statement here - map.obstacles is a vector containing arrays !important!
+            } else if contains_array(&map.obstacles, &[column as i16, row as i16]) {
+                print!(" | ");
+            }
             else {
                 print!(" # ");
             }
