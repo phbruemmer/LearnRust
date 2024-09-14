@@ -1,5 +1,8 @@
 use std::io;
 use rand::Rng;
+use crossterm::{self, event, ExecutableCommand, terminal};
+use std::time::Duration;
+use crossterm::event::{Event, KeyCode, KeyEventKind};
 
 struct Robot {
     coordinates: [i16; 2]
@@ -64,69 +67,61 @@ fn contains_array(vec: &Vec<[i16; 2]>, array: &[i16]) -> bool {
 
 
 fn game(map: &mut Map, robot: &Robot, coins:  &mut Coins) {
-    print!("{}[2J", 27 as char); // Clear terminal window
+    io::stdout().execute(terminal::Clear(terminal::ClearType::All)).expect("[ERROR] Could not clear the terminal!"); // Clear terminal window
+    // print!("{}[2J", 27 as char); // Clear terminal window
 
     if robot.coordinates == coins.coin_coordinates {
         coins.increment_coins();
         coins.change_coin_coordinates(&[random(1, map.map[0] as i16 - 1), random(1, map.map[1] as i16 - 1)],  &map.map);
         map.add_obstacle(&robot.coordinates, &coins.coin_coordinates, map.map);
-        println!("Coin collected!");
     }
 
-    println!("coins: {}\n\n", coins.coins);
+    let mut map_out: String = Default::default();
 
     for row in 0..map.map[1] {
         for column in 0..map.map[0] {
             if column == robot.coordinates[0] as u16 && row == robot.coordinates[1] as u16 { // Places the robot character ("+") on the given coordinates
-                print!(" + ");
+                map_out += " + ";
             } else if column == coins.coin_coordinates[0] as u16 && row == coins.coin_coordinates[1] as u16 { // Places the coin character ("o") on the given coordinates
-                print!(" o " );
+                map_out += " o " ;
             } else if contains_array(&map.obstacles, &[column as i16, row as i16]) {
-                print!(" | ");
+                map_out += " | ";
             }
             else {
-                print!(" # ");
+                map_out +=" # ";
             }
         }
-        print!("\n");
+        map_out += "\n";
     }
+    println!("{}", map_out);
+    println!("\n\ncoins: {}", coins.coins);
 }
 
-fn start_game(_map: &mut Map, _robot: &mut Robot, _player: &mut Coins) {
+fn start_game(_map: &mut Map, _robot: &mut Robot, _coins: &mut Coins) {
+    // terminal::enable_raw_mode().expect("Could not enable raw terminal mode!");
     loop {
-        loop {
-            let mut input = String::new();
-            let mut direction = String::new();
-            println!("Please enter the direction (x / y): ");
-            io::stdin()
-                .read_line(&mut direction)
-                .expect("Failed to read line.");
-            let direction = direction.trim();
-
-            println!("Please enter the amount of steps the robot has to go: ");
-            io::stdin()
-                .read_line(&mut input)
-                .expect("Failed to read line.");
-            match input.trim().parse::<i8>() {
-                Ok(num) => {
-                    _robot.move_forward(num, &direction);
-                    break;
-                }
-                Err(_) => {
-                    println!("Invalid integer!");
+        if event::poll(Duration::from_millis(500)).expect("Couldn't read input!") {
+            if let Ok(Event::Key(key_event)) = event::read() {
+                if key_event.kind == KeyEventKind::Release {
+                    match key_event.code {
+                        KeyCode::Char('q') => break,
+                        KeyCode::Char('w') => _robot.move_forward(-1, "y"),
+                        KeyCode::Char('a') => _robot.move_forward(-1, "x"),
+                        KeyCode::Char('s') => _robot.move_forward(1, "y"),
+                        KeyCode::Char('d') => _robot.move_forward(1, "x"),
+                        _ => {}
+                    }
                 }
             }
+            game(_map, _robot, _coins,);
         }
-        println!("\n\n\n");
-        game(_map, _robot, _player,);
     }
 }
-
 fn prepare_game() {
     let mut map_width = String::new();
     let mut map_height = String::new();
-
     println!("[INPUT] Enter Map width: ");
+
     io::stdin()
         .read_line(&mut map_width)
         .expect("Failed to read line.");
@@ -160,6 +155,27 @@ fn main() {
 }
 
 
+
+
+
+
+/*
+
+    terminal::enable_raw_mode();
+    io::stdout().execute(terminal::Clear(terminal::ClearType::All));
+    loop {
+        if event::poll(std::time::Duration::from_millis(500)).expect("Couldn't read input!") {
+            if let Ok(event::Event::Key(key_event)) = event::read() {
+                println!("{:?}", key_event);
+                if key_event.code == event::KeyCode::Char('b'){ break; }
+            }
+        }
+    }
+
+    terminal::disable_raw_mode();
+
+
+*/
 
 
 /*
