@@ -88,7 +88,7 @@ fn game(map: &mut Map, robot: &Robot, coins:  &mut Coins) {
                 map_out += " | ";
             }
             else {
-                map_out +=" # ";
+                map_out +=" . ";
             }
         }
         map_out += "\n";
@@ -105,10 +105,10 @@ fn start_game(_map: &mut Map, _robot: &mut Robot, _coins: &mut Coins) {
                 if key_event.kind == KeyEventKind::Release {
                     match key_event.code {
                         KeyCode::Char('q') => break,
-                        KeyCode::Char('w') => _robot.move_forward(-1, "y"),
-                        KeyCode::Char('a') => _robot.move_forward(-1, "x"),
-                        KeyCode::Char('s') => _robot.move_forward(1, "y"),
-                        KeyCode::Char('d') => _robot.move_forward(1, "x"),
+                        KeyCode::Char('w') => if !contains_array(&_map.obstacles, &mut [_robot.coordinates[0] ,_robot.coordinates[1] - 1]) { _robot.move_forward(-1, "y") },
+                        KeyCode::Char('a') => if !contains_array(&_map.obstacles, &mut [_robot.coordinates[0] - 1 ,_robot.coordinates[1]]) { _robot.move_forward(-1, "x") },
+                        KeyCode::Char('s') => if !contains_array(&_map.obstacles, &mut [_robot.coordinates[0] ,_robot.coordinates[1] + 1]) { _robot.move_forward(1, "y") },
+                        KeyCode::Char('d') => if !contains_array(&_map.obstacles, &mut [_robot.coordinates[0] + 1 ,_robot.coordinates[1]]) { _robot.move_forward(1, "x") },
                         _ => {}
                     }
                 }
@@ -144,7 +144,6 @@ fn prepare_game() {
                 }
                 Err(_) => { main() }
             }
-
         }
         Err(_) => { prepare_game() }
     }
