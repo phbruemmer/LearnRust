@@ -27,11 +27,11 @@ fn random(x: i16, y: i16) -> i16 { // Creates random number between x and y
 impl Coins {
     fn increment_coins(&mut self) { self.coins += 1 }
 
-    fn change_coin_coordinates(&mut self, player_coordinates: &[i16; 2], map_size: &[u16; 2]) {
-        let mut coordinates: [i16; 2] = [random(0, map_size[0] as i16), random(0, map_size[1] as i16)];
+    fn change_coin_coordinates(&mut self, player_coordinates: &[i16; 2], map: &Map) {
+        let mut coordinates: [i16; 2] = [random(0, map.map[0] as i16), random(0, map.map[1] as i16)];
 
-        while coordinates == *player_coordinates {
-            coordinates = [random(0, map_size[0] as i16), random(0, map_size[1] as i16)];
+        while coordinates == *player_coordinates || contains_array(&map.obstacles, &coordinates) {
+            coordinates = [random(0, map.map[0] as i16), random(0, map.map[1] as i16)];
         }
         self.coin_coordinates = coordinates;
     }
@@ -72,7 +72,7 @@ fn game(map: &mut Map, robot: &Robot, coins:  &mut Coins) {
 
     if robot.coordinates == coins.coin_coordinates {
         coins.increment_coins();
-        coins.change_coin_coordinates(&[random(1, map.map[0] as i16 - 1), random(1, map.map[1] as i16 - 1)],  &map.map);
+        coins.change_coin_coordinates(&[random(1, map.map[0] as i16 - 1), random(1, map.map[1] as i16 - 1)],  &map);
         map.add_obstacle(&robot.coordinates, &coins.coin_coordinates, map.map);
     }
 
