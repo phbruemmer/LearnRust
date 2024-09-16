@@ -9,7 +9,7 @@ struct Robot {
 }
 
 struct Coins {
-    coins: i8,
+    coins: u32,
     coin_coordinates: [i16; 2],
 }
 
@@ -85,7 +85,7 @@ fn game(map: &mut Map, robot: &Robot, coins:  &mut Coins) {
             } else if column == coins.coin_coordinates[0] as u16 && row == coins.coin_coordinates[1] as u16 { // Places the coin character ("o") on the given coordinates
                 map_out += " o " ;
             } else if contains_array(&map.obstacles, &[column as i16, row as i16]) {
-                map_out += " | ";
+                map_out += " # ";
             }
             else {
                 map_out +=" . ";
