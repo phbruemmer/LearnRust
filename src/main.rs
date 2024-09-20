@@ -1,8 +1,10 @@
 use std::io;
+use std::io::Write;
 use rand::Rng;
-use crossterm::{self, event, ExecutableCommand, terminal};
+use crossterm::{self, event, ExecutableCommand, terminal, cursor};
 use std::time::Duration;
 use crossterm::event::{Event, KeyCode, KeyEventKind};
+use crossterm::terminal::ClearType;
 
 struct Robot {
     coordinates: [i16; 2]
@@ -67,7 +69,9 @@ fn contains_array(vec: &Vec<[i16; 2]>, array: &[i16]) -> bool {
 
 
 fn game(map: &mut Map, robot: &Robot, coins:  &mut Coins) {
-    io::stdout().execute(terminal::Clear(terminal::ClearType::All)).expect("[ERROR] Could not clear the terminal!"); // Clear terminal window
+    let mut stdout = io::stdout();
+    stdout.execute(terminal::Clear(ClearType::All)).unwrap();
+    stdout.execute(cursor::MoveTo(0, 0)).unwrap();
     // print!("{}[2J", 27 as char); // Clear terminal window
 
     if robot.coordinates == coins.coin_coordinates {
@@ -95,6 +99,8 @@ fn game(map: &mut Map, robot: &Robot, coins:  &mut Coins) {
     }
     println!("{}", map_out);
     println!("\n\ncoins: {}", coins.coins);
+    stdout.flush().unwrap();
+
 }
 
 fn start_game(_map: &mut Map, _robot: &mut Robot, _coins: &mut Coins) {
